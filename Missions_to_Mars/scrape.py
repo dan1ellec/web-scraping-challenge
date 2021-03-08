@@ -8,24 +8,30 @@ import pandas as pd
 
 # Setting executable path and activating chrome browser
 from webdriver_manager.chrome import ChromeDriverManager
-executable_path = {'executable_path': ChromeDriverManager().install()}
+#executable_path = {"executable_path": ChromeDriverManager().install()}
 
 # opening a chrome browser
-browser = Browser('chrome', **executable_path, headless=False)
+#browser = Browser("chrome", **executable_path, headless=False)
 
-
-def scrape_all();
+def scrape_all():
+    executable_path = {"executable_path": ChromeDriverManager().install()}
+    # opening a chrome browser
+    browser = Browser("chrome", **executable_path, headless=False)
 
     news_title, news_p = mars_news(browser)
+    featured_image_url = featured_mars_image(browser)
+    mars_facts_html = mars_facts()
+    hemisphere_image_urls = mars_hemispheres(browser)
 
     all_data = {
     "news_title": news_title,
-    "news_p": news_p
-    "featured_image_url": featured_image_url
-    "mars_facts_html": mars_facts_html
+    "news_p": news_p,
+    "featured_image_url" : featured_image_url,
+    "mars_facts_html": mars_facts_html,
     "hemisphere_image_urls": hemisphere_image_urls
     }
-
+    
+    browser.quit()
     return all_data
 
 
@@ -42,15 +48,16 @@ def mars_news(browser):
     # first identifying the main parent section
     item_list = soup.find('ul', class_ = 'item_list')
     # now looking within for the title
-    news_title = item_list.find('div', class_="content_title").text
+    news_title = item_list.find('div', class_='content_title').text
     # now obtaining the paragraph
     # paragraph is within div class = "article_teaser_body" of item_list obtained above
-    news_p = item_list.find('div', class_="article_teaser_body").text
+    news_p = item_list.find('div', class_='article_teaser_body').text
 
     return news_title, news_p
 
 
 def featured_mars_image(browser):
+    
     url = "https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/index.html"
     # Opening the website specified by the URL in chrome
     browser.visit(url)
@@ -62,7 +69,7 @@ def featured_mars_image(browser):
     # Using BeautifulSoup to parse html
     soup = BeautifulSoup(html, 'html.parser')
     # within this webpage the image is found at img class='fancybox-image'
-    image = soup.find('img', class_='fancybox-image').attrs['src']
+    image = soup.find('img', class_='fancybox-image').attrs["src"]
     # image link needs to be added to the end of the link for the whole webpage
     featured_image_url = f"https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/{image}"
 
@@ -70,8 +77,9 @@ def featured_mars_image(browser):
 
 
 def mars_facts():
+    
     # setting the url
-    url = 'https://space-facts.com/mars/'
+    url = "https://space-facts.com/mars/"
     # Using read_html function in Pandas to automatically scrape any tabular data from the webpage
     table_info = pd.read_html(url)
     # Want the mars planet profile which is the first table
@@ -84,6 +92,7 @@ def mars_facts():
     return mars_facts_html
 
 def mars_hemispheres(browser):
+    
     # URL of page to be scraped
     url = "https://astrogeology.usgs.gov/search/results?q=hemisphere+enhanced&k1=target&v1=Mars" 
     # Opening the website specified by the URL in chrome
@@ -107,7 +116,7 @@ def mars_hemispheres(browser):
         # finding the section where the title is
         section = soup.find('section', class_ = "block metadata")    
         #obtaining the title
-        title = section.find('h2', class_="title").text
+        title = section.find('h2', class_='title').text
         # setting as key value pair
         hemisphere_info["title"] = title
         # A reference to the image is contained with the 'Sample' text
@@ -123,3 +132,8 @@ def mars_hemispheres(browser):
         browser.visit(url)
     
     return hemisphere_image_urls
+
+
+
+#if __name__ == "__main__":
+    #scrape_all()
